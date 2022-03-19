@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # Written by Arpan Kundu, arpan.kundu@gmail.com
-# C 2021 
+# C 2022 
 # Version: March 19, 2022
 
 import sys,os
@@ -277,14 +277,12 @@ class ensemble_averaged_overlap:
           """
             This method plots the VBM and CBM ensemble averaged overlap matrices 
           """
+          plt.rc('font', size = self.font_size)
+          plt.rc('axes', titlesize = self.font_size)
           fig, axs = plt.subplots(1,2)
           fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.1)
           #plt.setp(axs,xlim=custom_xlim,ylim=custom_ylim)
 
-          plt.rc('font', size = self.font_size)
-          plt.rc('axes', titlesize = self.font_size)
-          #vb_ticks = [420, 426, 432]
-          #cb_ticks = [433, 439, 444]
           vb_cm_ticks = np.linspace(np.min(self.vb_coeff), np.max(self.vb_coeff), num_cm_ticks)
           cb_cm_ticks = np.linspace(np.min(self.cb_coeff), np.max(self.cb_coeff), num_cm_ticks)
           for i in range(2):
