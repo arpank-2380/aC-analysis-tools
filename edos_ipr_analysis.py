@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # Written by Arpan Kundu, arpan.kundu@gmail.com
 # C 2022 
-# Version: March 19, 2022
+# Version: March 21, 2022
 
 import sys,os
 import numpy as np
@@ -279,7 +279,7 @@ class ensemble_averaged_overlap:
           """
           plt.rc('font', size = self.font_size)
           plt.rc('axes', titlesize = self.font_size)
-          fig, axs = plt.subplots(1,2)
+          fig, axs = plt.subplots(1,2,num='Overlap Matrices')
           fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.1)
           #plt.setp(axs,xlim=custom_xlim,ylim=custom_ylim)
 
@@ -393,7 +393,7 @@ class eigenvalue_ipr_density:
           ### IPR vs Indices plot
           h_ind_ipr, xedge_ind_ipr, yedge_ind_ipr, image_ind_ipr, plot_ind_ipr = \
           self.plot_hist2d( x=ind, y=ipr2, xlabel="Orbital indices", ylabel="IPR",\
-                            xlim = orb_lim,ylim = ipr_lim, xticks = en_ticks, yticks = ipr_ticks,\
+                            xlim = orb_lim,ylim = ipr_lim, xticks = orb_ticks, yticks = ipr_ticks,\
                             bins=(self.norb,100), vlim = den_lim, fig_suffix = 'ipr_ind', cmap=self.cmap,\
                             hline = self.hline, static = static_ipr_ind)
 
@@ -403,16 +403,19 @@ class eigenvalue_ipr_density:
 
           ### IPR vs Indices plot: Normalized along indices axis
           plot_prob_den = self.plot_prob_den(xedge_ind_ipr, yedge_ind_ipr, prob_den, \
+                                             xticks = orb_ticks, yticks = ipr_ticks, \
                                              log_cmap=True,cmap=self.cmap,fig_suffix='den_norm_ind',\
                                              hline = self.hline, static = static_ipr_ind)
 
           ### Plotting cumulative densities
           plot_cum_den_gt = self.plot_prob_den(xedge_ind_ipr, yedge_ind_ipr, cum_prob_den_gt, \
+                                               xticks = orb_ticks, yticks = ipr_ticks, \
                                                fig_suffix='cum_gt', cmap=self.cmap,\
                                                cbar_label='Cumulative probability density',\
                                                hline = self.hline, static = static_ipr_ind)
 
           plot_cum_den_lt = self.plot_prob_den(xedge_ind_ipr, yedge_ind_ipr, cum_prob_den_lt, \
+                                               xticks = orb_ticks, yticks = ipr_ticks, \
                                                fig_suffix='cum_lt', cmap=self.cmap,\
                                                cbar_label='Cumulative probability density',\
                                                hline = self.hline, static = static_ipr_ind)
@@ -458,6 +461,7 @@ class eigenvalue_ipr_density:
           bins = a tuple with two elements defining no of x-bins and y-bins
           """
           #cbar = None
+          plot = plt.figure(fig_suffix)
           plt.rc('font', size=self.font_size)
           plt.rc('axes', titlesize=self.font_size)
           #### New lines
@@ -479,7 +483,7 @@ class eigenvalue_ipr_density:
              rnge[0] = np.array(xlim)
              rnge[1] = np.array(ylim)
         
-          plot = plt.figure(fig_suffix)
+          #plot = plt.figure(fig_suffix)
           plt.xlabel(xlabel)
           plt.ylabel(ylabel)
           if xticks is not None:
@@ -491,7 +495,7 @@ class eigenvalue_ipr_density:
           cbar = plt.colorbar()
           cbar.set_label(cbar_label)
           if static is not None:
-             plt.scatter(static[:,0], static[:,1], s=200, marker='*', color='black')
+             plt.scatter(static[:,0], static[:,1], s=100, marker='*', color='black')
           #plot.colorbar()
           #plt.colorbar().set_label(cbar_label)
           if hline is not None:
@@ -503,7 +507,8 @@ class eigenvalue_ipr_density:
           return h, xedge, yedge, image, plot
       
 
-      def plot_prob_den(self,xedge,yedge,density, fig_suffix='cum_lt', log_cmap = False, cmap=None, \
+      def plot_prob_den(self,xedge,yedge,density, fig_suffix='cum_lt', \
+                        log_cmap = False, cmap=None, xticks=None, yticks=None, \
                         cbar_label="Probability density", hline=None, static=None): 
           """
           This method replot the objects received from a plot_hist2d method, for example we can modify some aspects
@@ -521,6 +526,10 @@ class eigenvalue_ipr_density:
           plt.rc('axes', titlesize=self.font_size)
           plt.xlabel("Orbital indices")
           plt.ylabel("IPR")
+          if xticks is not None:
+             plt.xticks(xticks)
+          if yticks is not None:
+             plt.yticks(yticks)
           if log_cmap:
              plt.pcolormesh(xedge, yedge, density.T, cmap=cmap, norm = colors.LogNorm())
           else:
@@ -529,7 +538,7 @@ class eigenvalue_ipr_density:
           cbar.set_label(cbar_label)
 
           if static is not None:
-             plt.scatter(static[:,0], static[:,1], s=200, marker='*', color='black')
+             plt.scatter(static[:,0], static[:,1], s=100, marker='*', color='black')
           if hline is not None:
              plt.axhline(y=hline, color='black', linestyle='--',linewidth=4)
 
