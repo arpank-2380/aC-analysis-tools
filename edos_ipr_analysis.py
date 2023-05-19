@@ -71,7 +71,8 @@ def mobility_edge(vbm,cbm,ipr_cut):
 
 
 
-def collect_mobility_edges(input_data_path = '../../Data/IPR-vs-Eigenvalues/' , output_path = 'Mobility_Gap_Data/', \
+def collect_mobility_edges(input_data_path = '../../Data/IPR-vs-Eigenvalues/' ,\
+                           output_path = 'Mobility_Gap_Data/', \
                            thermostats=[], samples=[], temperatures=[],vbm_ind=432,ipr_cut=0.0012):
     ev2mev=1000
     static_mobility_vb = {}
@@ -79,7 +80,8 @@ def collect_mobility_edges(input_data_path = '../../Data/IPR-vs-Eigenvalues/' , 
     static_mobility_gap = {}
     print ("#System     Static mobility gap w IPR cutoff = %15.8f"%ipr_cut)
     for sample in samples:
-        static_ipr, static_eigval, static_indices  = relaxed_ipr_eigval_ind(sample = sample, path = input_data_path)
+        static_ipr, static_eigval, static_indices  = \
+        relaxed_ipr_eigval_ind(sample = sample, path = input_data_path + 'Relaxed/')
         loc_cbm = static_indices.index(vbm_ind) + 1
         static_vbm = [[static_eigval[i],static_ipr[i]] for i in range(loc_cbm)]
         static_cbm = [[static_eigval[i],static_ipr[i]] for i in range(loc_cbm,len(static_indices)-1)]
