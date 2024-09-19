@@ -73,7 +73,8 @@ def mobility_edge(vbm,cbm,ipr_cut):
 
 def collect_mobility_edges(input_data_path = '../../Data/IPR-vs-Eigenvalues/' ,\
                            output_path = 'Mobility_Gap_Data/', \
-                           thermostats=[], samples=[], temperatures=[],vbm_ind=432,ipr_cut=0.0012):
+                           thermostats=[], samples=[], temperatures=[],vbm_ind=432,
+                           ipr_cut=0.0012, nconfig=None):
     ev2mev=1000
     static_mobility_vb = {}
     static_mobility_cb = {}
@@ -94,13 +95,17 @@ def collect_mobility_edges(input_data_path = '../../Data/IPR-vs-Eigenvalues/' ,\
 
 
     for thermostat in thermostats:
+        if (thermostat == 'MCAP') | (thermostat == 'OSRAP'): block_size = 2
+        elif (thermostat == 'MC') | (thermostat == 'OSR'): block_size = 1
+        else: block_size = 50 
         for sample in samples:
             outfile = open(output_path + thermostat + '_' + sample +'_iprc_' + str(ipr_cut) + '.dat','w')
             outfile.write("#  T(K)   Mobility_gap (eV)   gap_renorm (meV)  gap_err bar(meV)  VB_renorm(meV)  CB_renorm(meV)\n")
             for temp in temperatures:
                 directory = input_data_path + thermostat + "-" + str(temp) + "K/"
                 prefix = sample + "_" + str(temp) + "_wf"
-                m_edge = avg_mobility_edge(directory = directory, prefix = prefix, ipr_cut = ipr_cut)
+                m_edge = avg_mobility_edge(directory = directory, prefix = prefix, \
+                        ipr_cut = ipr_cut, nconfig = nconfig, block_size = block_size)
                 outfile.write("%8.2f    %12.6f     %12.6f     %12.6f     %12.6f    %12.6f \n"%(temp,m_edge.avg_gap, \
                              (m_edge.avg_gap - static_mobility_gap[sample])*ev2mev, m_edge.error_gap*ev2mev,\
                              (m_edge.avg_mob_vb - static_mobility_vb[sample])*ev2mev, \
@@ -123,7 +128,9 @@ class avg_mobility_edge:
              cbm_init,cbm_final =  Range of CB orbitals for which IPR calculated and stored
              ipr_cut = A predefined IPR cut off.
       """
-      def __init__(self, directory, prefix, vbm_init=420, vbm_final=432, cbm_init=433, cbm_final=444, ipr_cut=10):
+      def __init__(self, directory, prefix, 
+                  vbm_init=420, vbm_final=432, cbm_init=433, cbm_final=444, 
+                  ipr_cut=10, nconfig=None, block_size=50):
           
           if directory[-1] != '/':
              directory += '/'
@@ -142,7 +149,7 @@ class avg_mobility_edge:
               self.cbm_data.append(np.genfromtxt(directory+cbm_files[i_cbm]))
               i_cbm += 1
           
-          nconfig = len(self.vbm_data[0])
+          if nconfig is None: nconfig = len(self.vbm_data[0])
 
           self.mobility_gap = np.float64([])
           self.mobility_vb_edge = np.float64([]) 
@@ -161,9 +168,9 @@ class avg_mobility_edge:
                  self.cutoff_reached += 1
          #     #print("Mobility gap for Config-%d = %f"%(i_config,tmp_mobility_gap))
           
-          self.avg_mob_vb, self.var_mob_vb =  block_average(self.mobility_vb_edge,50)
-          self.avg_mob_cb, self.var_mob_cb =  block_average(self.mobility_cb_edge,50)
-          self.avg_gap, self.var_gap = block_average(self.mobility_gap,50)
+          self.avg_mob_vb, self.var_mob_vb =  block_average(self.mobility_vb_edge,block_size)
+          self.avg_mob_cb, self.var_mob_cb =  block_average(self.mobility_cb_edge,block_size)
+          self.avg_gap, self.var_gap = block_average(self.mobility_gap,block_size)
           self.error_vb =  2*np.sqrt(self.var_mob_vb)
           self.error_vb =  2*np.sqrt(self.var_mob_cb)
           self.error_gap = 2*np.sqrt(self.var_gap)
