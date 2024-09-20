@@ -8,12 +8,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
 
+# Below global variables are set for aC with 3.25g/cc PNAS 2022 paper
+# After exporting the modulues these global variables must be reset for
+# new systems.
 global fermi_energy, static_orb_start_ind
 
 fermi_energy = {"2ac": -5.55838, "3ac": -6.00572, "4ac": -6.196095, "7ac": -5.75367, \
                "8ac": -5.659515, "9ac": -5.861625, "10ac": -5.81378, "dia": -4.68608}
 
 static_orb_start_ind = 400
+
+### Functions and classes
 
 def relaxed_ipr_eigval_ind(path='../../Data/IPR-vs-Eigenvalues/Relaxed/',sample='9ac'):
     raw_data = np.genfromtxt(path + sample + '_relaxed_ipr_eigval.dat')
