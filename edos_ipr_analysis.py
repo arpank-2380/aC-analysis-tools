@@ -8,16 +8,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
 
+global fermi_energy, static_orb_start_ind
 
 fermi_energy = {"2ac": -5.55838, "3ac": -6.00572, "4ac": -6.196095, "7ac": -5.75367, \
                "8ac": -5.659515, "9ac": -5.861625, "10ac": -5.81378, "dia": -4.68608}
 
+static_orb_start_ind = 400
 
-def relaxed_ipr_eigval_ind(path='../../Data/IPR-vs-Eigenvalues/Relaxed/',sample='9ac', orb_start_ind=400):
+def relaxed_ipr_eigval_ind(path='../../Data/IPR-vs-Eigenvalues/Relaxed/',sample='9ac'):
     raw_data = np.genfromtxt(path + sample + '_relaxed_ipr_eigval.dat')
     ipr = raw_data[:,0]
     eigval = raw_data[:,1] - fermi_energy[sample]
-    indices = [i for i in range(orb_start_ind,orb_start_ind+len(ipr)+1)]
+    #print(fermi_energy[sample], static_orb_start_ind)
+    indices = [i for i in range(static_orb_start_ind, static_orb_start_ind+len(ipr)+1)]
     return ipr,eigval,indices
 
 
@@ -73,7 +76,8 @@ def mobility_edge(vbm,cbm,ipr_cut):
 
 def collect_mobility_edges(input_data_path = '../../Data/IPR-vs-Eigenvalues/' ,\
                            output_path = 'Mobility_Gap_Data/', \
-                           thermostats=[], samples=[], temperatures=[],vbm_ind=432,
+                           thermostats=[], samples=[], temperatures=[],\
+                           vbm_ind=432, vb = 13, cb=12,\
                            ipr_cut=0.0012, nconfig=None):
     ev2mev=1000
     static_mobility_vb = {}
@@ -88,7 +92,8 @@ def collect_mobility_edges(input_data_path = '../../Data/IPR-vs-Eigenvalues/' ,\
         static_cbm = [[static_eigval[i],static_ipr[i]] for i in range(loc_cbm,len(static_indices)-1)]
         tmp_mobility_vb, tmp_mobility_cb, tmp_mobility_gap, \
                tmp_cutoff_reached = mobility_edge(static_vbm,static_cbm,ipr_cut)
-        print(" %s         %12.6f  "%(sample,tmp_mobility_gap))
+        #print(" %s         %12.6f  "%(sample,tmp_mobility_gap))
+        print(f"{sample}        {tmp_mobility_gap:12.6f} (Cutoff Reached = {tmp_cutoff_reached})")
         static_mobility_vb[sample] = tmp_mobility_vb
         static_mobility_cb[sample] = tmp_mobility_cb
         static_mobility_gap[sample] = tmp_mobility_gap
@@ -105,6 +110,8 @@ def collect_mobility_edges(input_data_path = '../../Data/IPR-vs-Eigenvalues/' ,\
                 directory = input_data_path + thermostat + "-" + str(temp) + "K/"
                 prefix = sample + "_" + str(temp) + "_wf"
                 m_edge = avg_mobility_edge(directory = directory, prefix = prefix, \
+                        vbm_init = vbm_ind - vb+1, vbm_final = vbm_ind,\
+                        cbm_init = vbm_ind + 1, cbm_final = vbm_ind + cb,\
                         ipr_cut = ipr_cut, nconfig = nconfig, block_size = block_size)
                 outfile.write("%8.2f    %12.6f     %12.6f     %12.6f     %12.6f    %12.6f \n"%(temp,m_edge.avg_gap, \
                              (m_edge.avg_gap - static_mobility_gap[sample])*ev2mev, m_edge.error_gap*ev2mev,\
@@ -393,6 +400,8 @@ class eigenvalue_ipr_density:
 
           en,ipr1,ind,ipr2 = self.prepare_plot_data()
 
+          print(self.hline)
+
           ### IPR vs Energy plot
           h_en_ipr, xedge_en_ipr, yedge_en_ipr, image_en_ipr, plot_en_ipr = \
           self.plot_hist2d( x=en, y=ipr1, xlabel="$E-E_{\\rm Fermi}$ (eV)", ylabel="IPR",\
@@ -504,11 +513,12 @@ class eigenvalue_ipr_density:
           cbar = plt.colorbar()
           cbar.set_label(cbar_label)
           if static is not None:
+             #print(static) 
              plt.scatter(static[:,0], static[:,1], s=100, marker='*', color='black')
           #plot.colorbar()
           #plt.colorbar().set_label(cbar_label)
           if hline is not None:
-             plt.axhline(y=0.0012, color='black', linestyle='--',linewidth=4)
+             plt.axhline(y=hline, color='black', linestyle='--',linewidth=4)
           plot.savefig(self.fig_file_prefix + fig_suffix + ".png", dpi = self.dpi , bbox_inches = 'tight', pad_inches = 0.1)
           self.fig_counter += 1
           if not self.show_plot:
