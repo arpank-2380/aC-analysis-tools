@@ -335,6 +335,9 @@ class eigenvalue_ipr_density:
       orb_lim = A tuple: range of orbital indices to be shown in the plot 
       ipr_lim = A tuple: the range of IPR values to be shown in the plot
       den_lim = A tuple: the range of probability density to be shown in the color map
+      en_ticks = A list containing energy ticks
+      orb_ticks = A list containing orbital indices ticks
+      ipr_ticks = A list containig ticks of the IPR axis
       dpi = The dpi of the png output images
       font_size = Font size of the .png output images
       show_plot = if True it would show the plot while running
@@ -349,7 +352,7 @@ class eigenvalue_ipr_density:
                          en_lim=None, orb_lim = None, ipr_lim=None, den_lim=None,\
                          en_ticks = None, orb_ticks = None, ipr_ticks=None,\
                          dpi = 600, font_size = 20, show_plot = True, cmap=None, hline=None,\
-                         cum_prob_cut = 0.9,\
+                         cum_prob_cut = 0.9, nconfig = None,\
                          static_data_path = '../../Data/IPR-vs-Eigenvalues/Relaxed/',\
                          data_path = '../../Data/IPR-vs-Eigenvalues/',\
                          figure_path = '../../Figures/Eigenvalue_IPR_density/'):
@@ -381,7 +384,8 @@ class eigenvalue_ipr_density:
               self.cbm_data.append(np.genfromtxt(self.data_path+self.cbm_files[i_cbm]))
               i_cbm += 1
           
-          self.nconfig = len(self.vbm_data[0])
+          if nconfig is None: self.nconfig = len(self.vbm_data[0])
+          else: self.nconfig = nconfig
           #print("vbm_data=" + str(len(vbm_data[0])))
 
           if self.static_data_path is not None:
